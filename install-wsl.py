@@ -65,14 +65,20 @@ def install(config, target, renderer, scale, speed):
     else:
         state = {"config": str(config), "original_line": match.group() if match else "",
                  "original_command": previous}
-    windows_script = subprocess.check_output(["wslpath", "-w", str(renderer)], text=True).strip()
     if not renderer.is_file():
         raise ValueError("Windows renderer not found")
+    # Install the renderer alongside the adapter. Windows can open this WSL UNC
+    # path; repository moves must not invalidate future completion notifications.
+    target.mkdir(parents=True, exist_ok=True)
+    installed_renderer = target / "chatgpt-done.ps1"
+    windows_script = subprocess.check_output(["wslpath", "-w", str(installed_renderer)], text=True).strip()
     state.update(installed_line=line, windows_script=windows_script, scale=scale, speed=speed)
     updated = replace(text, line)
     tomllib.loads(updated)
     target.mkdir(parents=True, exist_ok=True)
     shutil.copy2(pathlib.Path(__file__).with_name("notify-wsl.py"), target / "notify-wsl.py")
+    if renderer.resolve() != installed_renderer.resolve():
+        shutil.copy2(renderer, installed_renderer)
     if config.exists():
         stamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
         shutil.copy2(config, str(config) + ".chatgpt-done." + stamp + ".bak")
@@ -94,7 +100,7 @@ def uninstall(target):
     tomllib.loads(updated)
     shutil.copy2(config, str(config) + ".chatgpt-done.uninstall.bak")
     atomic(config, updated)
-    for name in ("notify-wsl.py", "install-state.json"):
+    for name in ("notify-wsl.py", "chatgpt-done.ps1", "install-state.json"):
         (target / name).unlink(missing_ok=True)
 
 

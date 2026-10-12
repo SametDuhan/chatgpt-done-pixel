@@ -30,6 +30,21 @@ class Integration(unittest.TestCase):
             installer.uninstall(target)
             self.assertEqual(config.read_text(),original+"# later change\n")
 
+    def test_renderer_survives_repository_move(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = pathlib.Path(d)
+            source = root / "repo" / "chatgpt-done.ps1"
+            source.parent.mkdir()
+            source.write_text("renderer")
+            target = root / "installed"
+            with patch.object(installer.subprocess, "check_output", return_value="\\\\wsl.localhost\\Ubuntu\\installed\\chatgpt-done.ps1") as convert:
+                installer.install(root/"config.toml", target, source, 4, 1)
+            self.assertEqual(convert.call_args.args[0][-1], str(target/"chatgpt-done.ps1"))
+            source.unlink()
+            self.assertEqual((target/"chatgpt-done.ps1").read_text(), "renderer")
+            installer.uninstall(target)
+            self.assertFalse((target/"chatgpt-done.ps1").exists())
+
     def test_changed_notify_not_removed(self):
         with tempfile.TemporaryDirectory() as d:
             root=pathlib.Path(d); config=root/"config.toml"; target=root/"installed"

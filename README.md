@@ -56,8 +56,9 @@ python3 install-wsl.py
 ```
 
 Bu, WSL kullanıcı config dosyasına bağlanır; Windows config'ini değiştirmez.
-Adapter `~/.local/share/chatgpt-done-pixel` içine kopyalanır. Çizim için repodaki
-`chatgpt-done.ps1` kullanılır: repoyu taşır veya silersen kurulumu yenile.
+Adapter `~/.local/share/chatgpt-done-pixel` içine kopyalanır. Çizim betiği de bu kalıcı klasöre kopyalanır; Windows betiğe WSL UNC yolu
+üzerinden erişir. Repoyu taşımak veya silmek bildirimleri bozmaz. Eski kurulumu
+onarmak için yeni repo klasöründen `python3 install-wsl.py` komutunu tekrar çalıştır.
 Windows ve WSL kurulumları ayrı ayrı yapılabilir; her biri kendi eski komutunu
 korur. SDS/Claude ajanlarının çalışması bu bildirimi tetiklemez.
 
